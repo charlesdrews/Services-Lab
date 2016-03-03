@@ -17,5 +17,11 @@ public class MusicActionReceiver extends BroadcastReceiver {
         Intent musicServiceIntent = new Intent(context, MusicService.class);
         musicServiceIntent.putExtra(musicActionKey, action);
         context.startService(musicServiceIntent);
+
+        if (action == MusicService.MusicAction.STOP) {
+            Intent mainActivityIntent = new Intent(context, MainActivity.class);
+            mainActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(mainActivityIntent);
+        }
     }
 }
