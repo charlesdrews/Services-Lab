@@ -33,7 +33,13 @@ public class MusicService extends Service {
             mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    mPlayer.start();
+                    startPlayer();
+                }
+            });
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    stopSelf();
                 }
             });
         } catch (Throwable thr) {
@@ -47,7 +53,7 @@ public class MusicService extends Service {
         if (mPlayer.isPlaying()) {
             mPlayer.pause();
         } else {
-            mPlayer.start();
+            startPlayer();
         }
 
         return super.onStartCommand(intent, flags, startId);
@@ -58,5 +64,14 @@ public class MusicService extends Service {
         super.onDestroy();
         mPlayer.stop();
         mPlayer.release();
+    }
+
+    private void startPlayer() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mPlayer.start();
+            }
+        }).start();
     }
 }

@@ -23,7 +23,6 @@ public class MainActivity extends AppCompatActivity {
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // icon is initialized to the play icon
                 Intent intent = new Intent(MainActivity.this, MusicService.class);
                 startService(intent);
                 mPlaying = !mPlaying;
@@ -43,5 +42,9 @@ public class MainActivity extends AppCompatActivity {
                 playPause.setImageResource(R.drawable.ic_play_arrow_white_18dp);
             }
         });
+    }
+
+    private void launchPlayer() {
+        //TODO something something notifications
     }
 }
