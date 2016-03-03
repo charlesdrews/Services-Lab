@@ -16,7 +16,7 @@ import android.support.v4.app.NotificationCompat;
  */
 public class MusicService extends Service {
     private static final String URL = "http://downloads.blackhawks.nhl.com/audio/herecomethehawks.mp3";
-    private static final String ACTION_INTENT_NAME = "com.charlesdrews.herecomethehawks.CUSTOM_INTENT";
+    private static final String CUSTOM_INTENT_ACTION = "com.charlesdrews.herecomethehawks.CUSTOM_INTENT";
     private static final int NOTIFICATION_ID = 12345;
 
     public enum MusicAction { PLAY, PAUSE, RESUME, STOP, TOGGLE_PLAY_PAUSE }
@@ -107,6 +107,10 @@ public class MusicService extends Service {
         stopSelf();
     }
 
+    /**
+     * Give the service Foreground status to prevent cancellation. This requires a notification;
+     * use it to control play/pause/stop via a broadcast receiver.
+     */
     private void goForegroundWithNotification() {
         String action_key = getString(R.string.music_action_key);
 
@@ -115,18 +119,17 @@ public class MusicService extends Service {
         builder.setContentTitle("Here Come the Hawks");
         builder.setContentText("Great song, eh?");
 
-        Intent playPauseIntent = new Intent();
-        playPauseIntent.setAction(ACTION_INTENT_NAME);
+        Intent playPauseIntent = new Intent(CUSTOM_INTENT_ACTION);
         playPauseIntent.putExtra(action_key, MusicAction.TOGGLE_PLAY_PAUSE);
-        PendingIntent playPausePendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                0, playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent playPausePendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
+                (int) System.currentTimeMillis(), playPauseIntent, 0);
+                // use milliseconds as request code so pending intents don't overwrite each other
         builder.addAction(R.drawable.ic_refresh_white_18dp, "Play/Pause", playPausePendingIntent);
 
-        Intent stopIntent = new Intent();
-        stopIntent.setAction(ACTION_INTENT_NAME);
+        Intent stopIntent = new Intent(CUSTOM_INTENT_ACTION);
         stopIntent.putExtra(action_key, MusicAction.STOP);
-        PendingIntent stopPendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent stopPendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
+                (int) System.currentTimeMillis(), stopIntent, 0);
         builder.addAction(R.drawable.ic_stop_white_18dp, "Stop", stopPendingIntent);
 
         Notification notification = builder.build();
