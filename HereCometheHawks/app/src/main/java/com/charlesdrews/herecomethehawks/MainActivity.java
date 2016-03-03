@@ -8,7 +8,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
-    private boolean mPlaying = false;
+    private static final int PLAY_ICON_RES = R.drawable.ic_play_arrow_white_18dp;
+    private static final int PAUSE_ICON_RES = R.drawable.ic_pause_white_18dp;
+
+    private FloatingActionButton mPlayPauseButton;
+    private MusicService.MusicAction mPlayPauseButtonAction;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -17,34 +21,62 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final FloatingActionButton playPause = (FloatingActionButton) findViewById(R.id.play_pause_button);
-        FloatingActionButton stop = (FloatingActionButton) findViewById(R.id.stop_button);
+        mPlayPauseButton = (FloatingActionButton) findViewById(R.id.play_pause_button);
+        FloatingActionButton stopButton = (FloatingActionButton) findViewById(R.id.stop_button);
 
-        playPause.setOnClickListener(new View.OnClickListener() {
+        // initialize action for play/pause button to PLAY
+        mPlayPauseButtonAction = MusicService.MusicAction.PLAY;
+        mPlayPauseButton.setImageResource(PLAY_ICON_RES);
+
+        mPlayPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, MusicService.class);
-                startService(intent);
-                mPlaying = !mPlaying;
-                if (mPlaying) {
-                    playPause.setImageResource(R.drawable.ic_pause_white_18dp);
-                } else {
-                    playPause.setImageResource(R.drawable.ic_play_arrow_white_18dp);
-                }
+                sendActionToMusicService(mPlayPauseButtonAction);
+                resetPlayPauseButtonAction(mPlayPauseButtonAction);
             }
         });
 
-        stop.setOnClickListener(new View.OnClickListener() {
+        stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, MusicService.class);
-                stopService(intent);
-                playPause.setImageResource(R.drawable.ic_play_arrow_white_18dp);
+                sendActionToMusicService(MusicService.MusicAction.STOP);
+                resetPlayPauseButtonAction(MusicService.MusicAction.STOP);
             }
         });
     }
 
-    private void launchPlayer() {
-        //TODO something something notifications
+    private void sendActionToMusicService(MusicService.MusicAction action) {
+        Intent intent = new Intent(MainActivity.this, MusicService.class);
+        intent.putExtra(getString(R.string.music_action_key), action);
+        startService(intent);
+    }
+
+    private void resetPlayPauseButtonAction(MusicService.MusicAction lastActionSent) {
+        switch (lastActionSent) {
+
+            case PLAY:
+                // reset to PAUSE
+                mPlayPauseButtonAction = MusicService.MusicAction.PAUSE;
+                mPlayPauseButton.setImageResource(PAUSE_ICON_RES);
+                break;
+
+            case PAUSE:
+                // reset to RESUME
+                mPlayPauseButtonAction = MusicService.MusicAction.RESUME;
+                mPlayPauseButton.setImageResource(PLAY_ICON_RES);
+                break;
+
+            case RESUME:
+                // reset to PAUSE
+                mPlayPauseButtonAction = MusicService.MusicAction.PAUSE;
+                mPlayPauseButton.setImageResource(PAUSE_ICON_RES);
+                break;
+
+            case STOP:
+                // reset to PLAY
+                mPlayPauseButtonAction = MusicService.MusicAction.PLAY;
+                mPlayPauseButton.setImageResource(PLAY_ICON_RES);
+                break;
+        }
     }
 }
